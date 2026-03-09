@@ -35,6 +35,7 @@ import 'package:fluffychat/widgets/adaptive_dialogs/show_modal_action_popup.dart
 import 'package:fluffychat/widgets/adaptive_dialogs/show_ok_cancel_alert_dialog.dart';
 import 'package:fluffychat/widgets/adaptive_dialogs/show_text_input_dialog.dart';
 import 'package:fluffychat/widgets/future_loading_dialog.dart';
+import 'package:fluffychat/utils/translation_service.dart';
 import 'package:fluffychat/widgets/matrix.dart';
 import 'package:fluffychat/widgets/share_scaffold_dialog.dart';
 import '../../utils/account_bundles.dart';
@@ -361,6 +362,7 @@ class ChatController extends State<ChatPageWithRoom>
     );
 
     sendingClient = Matrix.of(context).client;
+    TranslationService.instance.init(sendingClient!);
     final lastEventThreadId =
         room.lastEvent?.relationshipType == RelationshipTypes.thread
         ? room.lastEvent?.relationshipEventId
@@ -455,7 +457,21 @@ class ChatController extends State<ChatPageWithRoom>
   void updateView() {
     if (!mounted) return;
     setReadMarker();
+    _fetchTranslationsForVisibleEvents();
     setState(() {});
+  }
+
+  void _fetchTranslationsForVisibleEvents() {
+    final t = timeline;
+    if (t == null || !TranslationService.instance.isEnabled) return;
+    final eventIds = t.events
+        .where((e) => e.type == EventTypes.Message)
+        .take(30)
+        .map((e) => e.eventId)
+        .toList();
+    if (eventIds.isNotEmpty) {
+      TranslationService.instance.fetchTranslations(eventIds, roomId: room.id);
+    }
   }
 
   Future<void>? loadTimelineFuture;
@@ -495,6 +511,7 @@ class ChatController extends State<ChatPageWithRoom>
     }
     timeline!.requestKeys(onlineKeyBackupOnly: false);
     if (room.markedUnread) room.markUnread(false);
+    _fetchTranslationsForVisibleEvents();
 
     return;
   }

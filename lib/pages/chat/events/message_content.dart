@@ -15,6 +15,7 @@ import 'package:fluffychat/utils/adaptive_bottom_sheet.dart';
 import 'package:fluffychat/utils/date_time_extension.dart';
 import 'package:fluffychat/utils/matrix_sdk_extensions/matrix_locals.dart';
 import 'package:fluffychat/widgets/avatar.dart';
+import 'package:fluffychat/utils/translation_service.dart';
 import 'package:fluffychat/widgets/matrix.dart';
 import '../../../config/app_config.dart';
 import '../../../utils/event_checkbox_extension.dart';
@@ -250,43 +251,57 @@ class MessageContent extends StatelessWidget {
                 fontSize: fontSize,
               );
             }
-            var html = AppSettings.renderHtml.value && event.isRichMessage
-                ? event.formattedText
-                : event.body.replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-            if (event.messageType == MessageTypes.Emote) {
-              html = '* $html';
-            }
-
             final bigEmotes =
                 event.onlyEmotes &&
                 event.numberEmotes > 0 &&
                 event.numberEmotes <= 3;
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: HtmlMessage(
-                html: html,
-                textColor: textColor,
-                room: event.room,
-                fontSize:
-                    AppSettings.fontSizeFactor.value *
-                    AppConfig.messageFontSize *
-                    (bigEmotes ? 5 : 1),
-                limitHeight: !selected,
-                linkStyle: TextStyle(
-                  color: linkColor,
-                  fontSize:
-                      AppSettings.fontSizeFactor.value *
-                      AppConfig.messageFontSize,
-                  decoration: TextDecoration.underline,
-                  decorationColor: linkColor,
-                ),
-                onOpen: (url) => UrlLauncher(context, url.url).launchUrl(),
-                eventId: event.eventId,
-                checkboxCheckedEvents: event.aggregatedEvents(
-                  timeline,
-                  EventCheckboxRoomExtension.relationshipType,
-                ),
-              ),
+            return ListenableBuilder(
+              listenable: TranslationService.instance,
+              builder: (context, _) {
+                final translation = TranslationService.instance.getTranslation(event.eventId);
+                String html;
+                if (translation != null) {
+                  html = translation.translatedText
+                      .replaceAll('<', '&lt;')
+                      .replaceAll('>', '&gt;');
+                } else if (AppSettings.renderHtml.value && event.isRichMessage) {
+                  html = event.formattedText;
+                } else {
+                  html = event.body
+                      .replaceAll('<', '&lt;')
+                      .replaceAll('>', '&gt;');
+                }
+                if (event.messageType == MessageTypes.Emote) {
+                  html = '* $html';
+                }
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: HtmlMessage(
+                    html: html,
+                    textColor: textColor,
+                    room: event.room,
+                    fontSize:
+                        AppSettings.fontSizeFactor.value *
+                        AppConfig.messageFontSize *
+                        (bigEmotes ? 5 : 1),
+                    limitHeight: !selected,
+                    linkStyle: TextStyle(
+                      color: linkColor,
+                      fontSize:
+                          AppSettings.fontSizeFactor.value *
+                          AppConfig.messageFontSize,
+                      decoration: TextDecoration.underline,
+                      decorationColor: linkColor,
+                    ),
+                    onOpen: (url) => UrlLauncher(context, url.url).launchUrl(),
+                    eventId: event.eventId,
+                    checkboxCheckedEvents: event.aggregatedEvents(
+                      timeline,
+                      EventCheckboxRoomExtension.relationshipType,
+                    ),
+                  ),
+                );
+              },
             );
         }
       case PollEventContent.startType:

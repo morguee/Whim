@@ -2,62 +2,62 @@ import 'dart:ui';
 
 abstract class AppConfig {
   // Const and final configuration values (immutable)
-  static const Color primaryColor = Color(0xFF5625BA);
-  static const Color primaryColorLight = Color(0xFFCCBDEA);
-  static const Color secondaryColor = Color(0xFF41a2bc);
+  static const Color primaryColor = Color(0xFF1E2A56);
+  static const Color primaryColorLight = Color(0xFFB3BAD1);
+  static const Color secondaryColor = Color(0xFF3A7CA5);
 
   static const Color chatColor = primaryColor;
   static const double messageFontSize = 16.0;
-  static const bool allowOtherHomeservers = true;
+  static const bool allowOtherHomeservers = false;
   static const bool enableRegistration = true;
   static const bool hideTypingUsernames = false;
 
   static const String inviteLinkPrefix = 'https://matrix.to/#/';
-  static const String deepLinkPrefix = 'im.fluffychat://chat/';
+  static const String deepLinkPrefix = 'com.unikong.whim://chat/';
   static const String schemePrefix = 'matrix:';
-  static const String pushNotificationsChannelId = 'fluffychat_push';
-  static const String pushNotificationsAppId = 'chat.fluffy.fluffychat';
+  static const String pushNotificationsChannelId = 'whim_push';
+  static const String pushNotificationsAppId = 'com.unikong.whim';
   static const double borderRadius = 18.0;
   static const double spaceBorderRadius = 11.0;
   static const double columnWidth = 360.0;
 
-  static const String website = 'https://fluffy.chat';
+  static const String website = 'https://chat.slc-group.com';
   static const String enablePushTutorial =
-      'https://fluffy.chat/faq/#push_without_google_services';
+      'https://chat.slc-group.com';
   static const String encryptionTutorial =
-      'https://fluffy.chat/faq/#how_to_use_end_to_end_encryption';
+      'https://chat.slc-group.com';
   static const String startChatTutorial =
-      'https://fluffy.chat/faq/#how_do_i_find_other_users';
+      'https://chat.slc-group.com';
   static const String howDoIGetStickersTutorial =
-      'https://fluffy.chat/faq/#how_do_i_get_stickers';
-  static const String appId = 'im.fluffychat.FluffyChat';
-  static const String appOpenUrlScheme = 'chat.fluffy';
+      'https://chat.slc-group.com';
+  static const String appId = 'com.unikong.whim';
+  static const String appOpenUrlScheme = 'com.unikong.whim';
 
   static const String sourceCodeUrl =
-      'https://github.com/krille-chan/fluffychat';
+      'https://github.com/morguee/Whim';
   static const String supportUrl =
-      'https://github.com/krille-chan/fluffychat/issues';
-  static const String changelogUrl = 'https://fluffy.chat/en/changelog/';
-  static const String donationUrl = 'https://ko-fi.com/krille';
+      'https://github.com/morguee/Whim/issues';
+  static const String changelogUrl = 'https://github.com/morguee/Whim/releases';
+  static const String donationUrl = 'https://chat.slc-group.com';
 
   static const Set<String> defaultReactions = {'👍', '❤️', '😂', '😮', '😢'};
 
   static final Uri newIssueUrl = Uri(
     scheme: 'https',
     host: 'github.com',
-    path: '/krille-chan/fluffychat/issues/new',
+    path: '/morguee/Whim/issues/new',
   );
 
   static final Uri homeserverList = Uri(
     scheme: 'https',
-    host: 'raw.githubusercontent.com',
-    path: 'krille-chan/fluffychat/refs/heads/main/recommended_homeservers.json',
+    host: 'chat.slc-group.com',
+    path: '',
   );
 
   static final Uri privacyUrl = Uri(
     scheme: 'https',
-    host: 'fluffy.chat',
-    path: '/en/privacy',
+    host: 'chat.slc-group.com',
+    path: '/privacy',
   );
 
   static const String mainIsolatePortName = 'main_isolate';

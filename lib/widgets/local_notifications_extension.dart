@@ -14,6 +14,7 @@ import 'package:fluffychat/l10n/l10n.dart';
 import 'package:fluffychat/utils/client_download_content_extension.dart';
 import 'package:fluffychat/utils/matrix_sdk_extensions/matrix_locals.dart';
 import 'package:fluffychat/utils/push_helper.dart';
+import 'package:fluffychat/utils/translation_service.dart';
 import 'package:fluffychat/widgets/fluffy_chat_app.dart';
 import 'package:fluffychat/widgets/matrix.dart';
 
@@ -33,7 +34,7 @@ extension LocalNotificationsExtension on MatrixState {
     final title = event.room.getLocalizedDisplayname(
       MatrixLocals(L10n.of(context)),
     );
-    final body = await event.calcLocalizedBody(
+    var body = await event.calcLocalizedBody(
       MatrixLocals(L10n.of(context)),
       withSenderNamePrefix:
           !event.room.isDirectChat ||
@@ -43,6 +44,10 @@ extension LocalNotificationsExtension on MatrixState {
       hideEdit: true,
       removeMarkdown: true,
     );
+    final translation = TranslationService.instance.getTranslation(event.eventId);
+    if (translation != null) {
+      body = translation.translatedText;
+    }
 
     if (kIsWeb) {
       final avatarUrl = event.senderFromMemoryOrFallback.avatarUrl;

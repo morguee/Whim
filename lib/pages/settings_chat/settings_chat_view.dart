@@ -6,10 +6,48 @@ import 'package:fluffychat/config/setting_keys.dart';
 import 'package:fluffychat/config/themes.dart';
 import 'package:fluffychat/l10n/l10n.dart';
 import 'package:fluffychat/utils/platform_infos.dart';
+import 'package:fluffychat/utils/translation_service.dart';
 import 'package:fluffychat/widgets/layouts/max_width_body.dart';
 import 'package:fluffychat/widgets/matrix.dart';
 import 'package:fluffychat/widgets/settings_switch_list_tile.dart';
 import 'settings_chat.dart';
+
+class _TranslationLanguageTile extends StatefulWidget {
+  @override
+  State<_TranslationLanguageTile> createState() => _TranslationLanguageTileState();
+}
+
+class _TranslationLanguageTileState extends State<_TranslationLanguageTile> {
+  static const _languages = {
+    '': 'Off',
+    'en': 'English',
+    'th': 'Thai',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final current = AppSettings.translationLanguage.value;
+    return ListTile(
+      title: const Text('Translate messages to'),
+      subtitle: Text(_languages[current] ?? 'Off'),
+      trailing: DropdownButton<String>(
+        value: _languages.containsKey(current) ? current : '',
+        underline: const SizedBox.shrink(),
+        items: _languages.entries
+            .map(
+              (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
+            )
+            .toList(),
+        onChanged: (value) async {
+          if (value == null) return;
+          await AppSettings.translationLanguage.setItem(value);
+          TranslationService.instance.clearCache();
+          setState(() {});
+        },
+      ),
+    );
+  }
+}
 
 class SettingsChatView extends StatelessWidget {
   final SettingsChatController controller;
@@ -57,6 +95,17 @@ class SettingsChatView extends StatelessWidget {
                 title: L10n.of(context).swipeRightToLeftToReply,
                 setting: AppSettings.swipeRightToLeftToReply,
               ),
+              Divider(color: theme.dividerColor),
+              ListTile(
+                title: Text(
+                  'Translation',
+                  style: TextStyle(
+                    color: theme.colorScheme.secondary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              _TranslationLanguageTile(),
               Divider(color: theme.dividerColor),
               ListTile(
                 title: Text(

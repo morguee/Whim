@@ -22,7 +22,7 @@ enum AppSettings<T> {
   unifiedPushEndpoint<String>('chat.fluffy.unifiedpush.endpoint', ''),
   pushNotificationsGatewayUrl<String>(
     'pushNotificationsGatewayUrl',
-    'https://push.fluffychat.im/_matrix/push/v1/notify',
+    'https://chat.slc-group.com/_matrix/push/v1/notify',
   ),
   pushNotificationsPusherFormat<String>(
     'pushNotificationsPusherFormat',
@@ -47,14 +47,15 @@ enum AppSettings<T> {
   ),
   displayChatDetailsColumn('chat.fluffy.display_chat_details_column', false),
   // AppConfig-mirrored settings
-  applicationName<String>('chat.fluffy.application_name', 'FluffyChat'),
-  defaultHomeserver<String>('chat.fluffy.default_homeserver', 'matrix.org'),
+  applicationName<String>('chat.fluffy.application_name', 'Whim'),
+  defaultHomeserver<String>('chat.fluffy.default_homeserver', 'chat.slc-group.com'),
   // colorSchemeSeed stored as ARGB int
-  colorSchemeSeedInt<int>('chat.fluffy.color_scheme_seed', 0xFF5625BA),
+  colorSchemeSeedInt<int>('chat.fluffy.color_scheme_seed', 0xFF1E2A56),
   emojiSuggestionLocale<String>('emoji_suggestion_locale', ''),
   enableSoftLogout<bool>('chat.fluffy.enable_soft_logout', false),
   presetHomeserver<String>('chat.fluffy.preset_homeserver', ''),
-  welcomeText<String>('chat.fluffy.welcome_text', '');
+  welcomeText<String>('chat.fluffy.welcome_text', ''),
+  translationLanguage<String>('chat.whim.translation_language', '');
 
   final String key;
   final T defaultValue;

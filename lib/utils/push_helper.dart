@@ -9,6 +9,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_shortcuts_new/flutter_shortcuts_new.dart';
 import 'package:matrix/matrix.dart';
 
+import 'package:http/http.dart' as http;
+
 import 'package:fluffychat/config/app_config.dart';
 import 'package:fluffychat/config/setting_keys.dart';
 import 'package:fluffychat/l10n/l10n.dart';
@@ -145,7 +147,7 @@ Future<void> _tryPushHelper(
   final matrixLocals = MatrixLocals(l10n);
 
   // Calculate the body
-  final body = event.type == EventTypes.Encrypted
+  var body = event.type == EventTypes.Encrypted
       ? l10n.newMessageInFluffyChat
       : await event.calcLocalizedBody(
           matrixLocals,
@@ -155,6 +157,36 @@ Future<void> _tryPushHelper(
           hideEdit: true,
           removeMarkdown: true,
         );
+  // Fetch translation directly via HTTP (TranslationService may not be fully
+  // initialized in background push context where client.homeserver is null)
+  final targetLang = AppSettings.translationLanguage.value;
+  if (targetLang.isNotEmpty && event.type != EventTypes.Encrypted) {
+    try {
+      final homeserver = client.homeserver ?? Uri.parse('https://${AppSettings.defaultHomeserver.value}');
+      final url = Uri.parse('${homeserver.scheme}://${homeserver.host}/_whim/translations/batch');
+      final resp = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'event_ids': [event.eventId],
+          'target_lang': targetLang,
+          'user_id': client.userID ?? '',
+          'room_id': event.roomId ?? '',
+          'wait': true,
+        }),
+      ).timeout(const Duration(seconds: 35));
+      if (resp.statusCode == 200) {
+        final data = json.decode(resp.body) as Map<String, dynamic>;
+        final translations = data['translations'] as Map<String, dynamic>?;
+        final t = translations?[event.eventId];
+        if (t != null) {
+          body = t['translated_text'] as String;
+        }
+      }
+    } catch (e) {
+      Logs().w('[Push] Translation fetch failed', e);
+    }
+  }
 
   // The person object for the android message style notification
   final avatar = event.room.avatar;
@@ -273,14 +305,7 @@ Future<void> _tryPushHelper(
           groupConversation: !event.room.isDirectChat,
           messages: [newMessage],
         ),
-    ticker: event.calcLocalizedBodyFallback(
-      matrixLocals,
-      plaintextBody: true,
-      withSenderNamePrefix: !event.room.isDirectChat,
-      hideReply: true,
-      hideEdit: true,
-      removeMarkdown: true,
-    ),
+    ticker: body,
     importance: Importance.high,
     priority: Priority.max,
     groupKey: event.room.spaceParents.firstOrNull?.roomId ?? 'rooms',

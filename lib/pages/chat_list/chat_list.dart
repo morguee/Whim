@@ -27,6 +27,7 @@ import 'package:fluffychat/widgets/share_scaffold_dialog.dart';
 import '../../../utils/account_bundles.dart';
 import '../../config/setting_keys.dart';
 import '../../utils/url_launcher.dart';
+import '../../utils/translation_service.dart';
 import '../../widgets/matrix.dart';
 
 enum ActiveFilter { allChats, messages, groups, unread, spaces }
@@ -377,6 +378,7 @@ class ChatListController extends State<ChatList>
         searchServer = Matrix.of(
           context,
         ).store.getString(_serverStoreNamespace);
+        TranslationService.instance.init(Matrix.of(context).client);
         Matrix.of(context).backgroundPush?.setupPush();
         UpdateNotifier.showUpdateSnackBar(context);
       }

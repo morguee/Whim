@@ -9,6 +9,7 @@ import 'package:fluffychat/utils/matrix_sdk_extensions/matrix_locals.dart';
 import 'package:fluffychat/utils/room_status_extension.dart';
 import 'package:fluffychat/widgets/adaptive_dialogs/show_ok_cancel_alert_dialog.dart';
 import 'package:fluffychat/widgets/future_loading_dialog.dart';
+import 'package:fluffychat/utils/translation_service.dart';
 import 'package:fluffychat/widgets/hover_builder.dart';
 import '../../config/themes.dart';
 import '../../utils/date_time_extension.dart';
@@ -316,29 +317,58 @@ class ChatListItem extends StatelessWidget {
                                   directChatMatrixId !=
                                       room.lastEvent?.senderId),
                             ),
-                            builder: (context, snapshot) => Text(
-                              room.membership == Membership.invite
-                                  ? room
-                                            .getState(
-                                              EventTypes.RoomMember,
-                                              room.client.userID!,
-                                            )
-                                            ?.content
-                                            .tryGet<String>('reason') ??
-                                        (isDirectChat
-                                            ? L10n.of(context).newChatRequest
-                                            : L10n.of(context).inviteGroupChat)
-                                  : snapshot.data ??
-                                        L10n.of(context).noMessagesYet,
-                              softWrap: false,
-                              maxLines: room.notificationCount >= 1 ? 2 : 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                decoration: room.lastEvent?.redacted == true
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                              ),
-                            ),
+                            builder: (context, snapshot) {
+                              final eventId = lastEvent?.eventId;
+                              if (eventId != null &&
+                                  TranslationService.instance.isEnabled &&
+                                  TranslationService.instance.getTranslation(eventId) == null) {
+                                TranslationService.instance.queueTranslation(
+                                  eventId,
+                                  roomId: room.id,
+                                );
+                              }
+                              return ListenableBuilder(
+                                listenable: TranslationService.instance,
+                                builder: (context, _) {
+                                  final translation = eventId != null
+                                      ? TranslationService.instance.getTranslation(eventId)
+                                      : null;
+                                  final String previewText;
+                                  if (room.membership == Membership.invite) {
+                                    previewText = room
+                                                .getState(
+                                                  EventTypes.RoomMember,
+                                                  room.client.userID!,
+                                                )
+                                                ?.content
+                                                .tryGet<String>('reason') ??
+                                            (isDirectChat
+                                                ? L10n.of(context).newChatRequest
+                                                : L10n.of(context).inviteGroupChat);
+                                  } else if (translation != null) {
+                                    previewText = translation.translatedText;
+                                  } else if (TranslationService.instance.isEnabled &&
+                                      eventId != null &&
+                                      !TranslationService.instance.hasChecked(eventId)) {
+                                    // Translation pending — show placeholder instead of original text
+                                    previewText = '…';
+                                  } else {
+                                    previewText = snapshot.data ?? L10n.of(context).noMessagesYet;
+                                  }
+                                  return Text(
+                                    previewText,
+                                    softWrap: false,
+                                    maxLines: room.notificationCount >= 1 ? 2 : 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      decoration: room.lastEvent?.redacted == true
+                                          ? TextDecoration.lineThrough
+                                          : null,
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                           ),
                   ),
                   const SizedBox(width: 8),
